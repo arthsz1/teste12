@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identificação de Valores de Mercado de Imóveis</title>
+    <style>
+        #suggestions {
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            position: absolute;
+            background-color: white;
+            width: 200px;
+        }
+        #suggestions div {
+            padding: 8px;
+            cursor: pointer;
+        }
+        #suggestions div:hover {
+            background-color: #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Identificação de Valores de Mercado de Imóveis</h1>
+    <form>
+        <!-- Campo de texto para buscar cidade com autocomplete -->
+        <input type="text" id="cityName" placeholder="Digite o nome da cidade" autocomplete="off">
+        <div id="suggestions"></div>
+        
+        <!-- Botão para pesquisa baseado na cidade selecionada -->
+        <input type="button" value="Buscar Imóveis" id="pesquisarPorCidade">
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        const cityNameInput = document.getElementById("cityName");
+        const suggestionsDiv = document.getElementById("suggestions");
+        const resultDiv = document.getElementById("result");
+
+        // Adiciona listener para input no campo de cidade
+        cityNameInput.addEventListener("input", () => {
+            const query = cityNameInput.value;
+            if (query.length > 2) {  // Inicia busca após 3 letras
+                fetch(`http://api.geonames.org/searchJSON?name_startsWith=${query}&maxRows=5&username=SEU_USERNAME`) // Substitua SEU_USERNAME pelo seu nome de usuário Geonames
+                .then(response => response.json())
+                .then(data => {
+                    suggestionsDiv.innerHTML = "";
+                    data.geonames.forEach(city => {
+                        const div = document.createElement("div");
+                        div.innerText = `${city.name}, ${city.countryName}`;
+                        div.onclick = () => selectCity(city);
+                        suggestionsDiv.appendChild(div);
+                    });
+                })
+                .catch(err => console.error(err));
+            } else {
+                suggestionsDiv.innerHTML = "";
+            }
+        });
+
+        function selectCity(city) {
+            cityNameInput.value = `${city.name}, ${city.countryName}`;
+            suggestionsDiv.innerHTML = "";
+        }
+
+        document.getElementById("pesquisarPorCidade").addEventListener("click", () => {
+            const cityName = cityNameInput.value;
+            if (cityName) {
+                resultDiv.innerHTML = `Buscando imóveis em ${cityName}...`;
+                // Aqui você pode adicionar lógica para busca de imóveis na cidade selecionada
+            }
+        });
+    </script>
+</body>
+</html>
